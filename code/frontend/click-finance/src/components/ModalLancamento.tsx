@@ -29,7 +29,7 @@ export default function ModalLancamento({ visible, onDismiss, onSubmit }: Props)
   const [quantidade, setQuantidade] = useState('1');
   const [preco, setPreco] = useState('');
   const [custos, setCustos] = useState('');
-  const [data, setData] = useState<Date | null>(new Date());
+  const [data, setData] = useState('');   // OBS.: agora é string, não Date
 
   const valorTotal =
     (parseFloat(preco) || 0) * (parseInt(quantidade) || 0) + (parseFloat(custos) || 0);
@@ -51,20 +51,23 @@ export default function ModalLancamento({ visible, onDismiss, onSubmit }: Props)
             </View>
           </RadioButton.Group>
 
+
+
+
           {/* -------- Linha 2 -------- */}
           <View style={styles.row}>
 
-            <ContainerInput title="Data da compra">
-              <InputDatePicker
-                value={data}
-                onSelect={setData}
-              />
-
-            </ContainerInput>
+<InputDatePicker
+  title="Data da compra"
+  value={data}                 // data é string 'dd/mm/aaaa'
+  onChange={setData}
+/>
 
 
-            <ContainerInput title="Outros custos">
+
+            <ContainerInput title="Preço Unitário">
               <TextInput
+                placeholder='Ex: corretagem, taxas'
                 mode="outlined"
                 value={custos}
                 onChangeText={setCustos}
@@ -122,6 +125,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
+    justifyContent: 'center',
   },
   toggleRow: {
     flexDirection: 'row',
