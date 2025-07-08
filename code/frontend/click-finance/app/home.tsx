@@ -13,8 +13,8 @@ import CardVariacao from '../src/components/CardVariacao';
 
 export default function Home() {
   return (
-    <PaperProvider>
-      <ThemeProvider>
+    <ThemeProvider>
+      <PaperProvider> 
         <ContainerMaster>
           <Navbar />
           <Section direction="row" justify="space-between" align="flex-start">
@@ -53,7 +53,7 @@ export default function Home() {
             </ContainerSmall>
           </Section>
         </ContainerMaster>
-      </ThemeProvider>
-    </PaperProvider>
+      </PaperProvider>
+    </ThemeProvider>
   );
 }
