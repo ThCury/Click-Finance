@@ -23,9 +23,9 @@ class Stock(Asset):
     __tablename__ = "stocks"
 
     id     = Column(Integer, ForeignKey("assets.id"), primary_key=True)
-    symbol = Column(String(10),
-                    ForeignKey("assets.symbol"),
-                    nullable=False, index=True)
+    # symbol = Column(String(10),
+    #                 ForeignKey("assets.symbol"),
+    #                 nullable=False, index=True)
 
     pl  = Column(Float)
     dy  = Column(Float)

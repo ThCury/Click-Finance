@@ -1,13 +1,18 @@
-// ModalLancamento.tsx
 import React, { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import { View, StyleSheet, KeyboardAvoidingView } from 'react-native';
 import { Modal, Portal, Text, Button, RadioButton, TextInput } from 'react-native-paper';
-import Dropdown from './Dropdown';
-import ContainerInput from './ContainerInput';
-import InputDatePicker from './InputDatePicker';
+
 import { useTheme } from '../context/ThemeContext';
 
-const tiposAtivo = ['Ações', 'FIIs', 'ETFs', 'BDRs', 'ETFs Intern.', 'Stocks'];
+import InputDatePicker from './InputDatePicker';
+import InputNumber from './InputNumber';
+import InputText from './InputText';
+import AutoFillTicker from './AutoFillTicker';
+
+import ContainerInput from './ContainerInput';
+import Dropdown from './Dropdown';
+import { moneyApplyMask } from './Utils/Masks/index';
 
 type Props = {
   visible: boolean;
@@ -15,25 +20,50 @@ type Props = {
   onSubmit: (data: any) => void;
 };
 
-export default function ModalLancamento({ visible, onDismiss, onSubmit }: Props) {
+export function ModalLancamento({ visible, onDismiss, onSubmit }: Props) {
+  //#region Constantes e Funções
   const { theme } = useTheme();
-  const isDark = theme === 'dark';
+  const tiposAtivo = ['Ações', 'FIIs', 'ETFs', 'BDRs', 'ETFs Intern.', 'Stocks'];
+  const hoje = new Date().toLocaleDateString('pt-BR'); // "09/07/2025"
 
+  const isDark = theme === 'dark';
   const background = isDark ? '#1E1F24' : '#fff';
   const textColor = isDark ? '#fff' : '#000';
   const labelColor = isDark ? '#ccc' : '#333';
+  const totalBg = isDark ? '#2A2B31' : '#F1F1F1';
+
 
   const [tipo, setTipo] = useState('Compra');
-  const [tipoAtivo, setTipoAtivo] = useState('');
-  const [ativo, setAtivo] = useState('');
-  const [quantidade, setQuantidade] = useState('1');
-  const [preco, setPreco] = useState('');
-  const [custos, setCustos] = useState('');
-  const [data, setData] = useState('');   // OBS.: agora é string, não Date
+  const { control, handleSubmit, watch, setValue } = useForm({
+    defaultValues: {
+      dataCompra: hoje,
+      custos: '',
+      preco: '',
+      quantidade: '1',
+      tipoAtivo: '',
+      ativo: '',
+    },
+  });
 
+  const moneyToNumber = (s: string) => Number(s.replace(/\./g, '').replace(',', '.')) || 0;
   const valorTotal =
-    (parseFloat(preco) || 0) * (parseInt(quantidade) || 0) + (parseFloat(custos) || 0);
+    moneyToNumber(watch('preco')) *
+      (parseFloat(watch('quantidade')) || 0) +
+    moneyToNumber(watch('custos'));
 
+  function onMoneyChange(value: string) {
+    const maskedValue = moneyApplyMask(value);
+    setValue('preco',maskedValue);
+  }
+  function onAtivoChange(value: string) {
+    setValue('ativo',value);
+    console.log('Ativo selecionado:', value);
+    
+  }
+
+  //#endregion
+
+  //#region View
   return (
     <Portal>
       <Modal
@@ -51,35 +81,77 @@ export default function ModalLancamento({ visible, onDismiss, onSubmit }: Props)
             </View>
           </RadioButton.Group>
 
-
-
-
-          {/* -------- Linha 2 -------- */}
+          {/* -------- Linha 1 -------- */}
           <View style={styles.row}>
+            {/* Data da compra */}
+            <Controller
+              control={control}
+              name="dataCompra"
+              rules={{ pattern: /^\d{2}\/\d{2}\/\d{4}$/, required: true }}
+              render={({ field: { value, onChange } }) => (
+                <InputDatePicker
+                  title="Data da compra"
+                  value={value}
+                  onChange={onChange}
+                />
+              )}
+            />
 
-<InputDatePicker
-  title="Data da compra"
-  value={data}                 // data é string 'dd/mm/aaaa'
-  onChange={setData}
-/>
+            {/* Ativo  autofill*/}
+            <Controller
+              control={control}
+              name="ativo"
+              //rules={{ pattern: /^\d{2}\/\d{2}\/\d{4}$/, required: true }}
+              render={({ field: { value, onChange } }) => (
+                <InputText
+                  title="Nome do Ativo"
+                  value={value}
+                  onChange={onChange}
+                />
+              )}
+            />
+          
 
 
-
-            <ContainerInput title="Preço Unitário">
-              <TextInput
-                placeholder='Ex: corretagem, taxas'
-                mode="outlined"
-                value={custos}
-                onChangeText={setCustos}
-                keyboardType="numeric"
-                style={styles.textInput}
-              />
-            </ContainerInput>
           </View>
 
+         {/* -------- Linha 3 -------- */}
+          <View style={styles.row}>
+            {/* Preço */}
+            <Controller
+              control={control}
+              name="preco"
+              rules={{ required: true }}
+              render={({ field: { value, onChange } }) => (
+                <InputNumber
+                  title="Preço em R$"
+                  value={value}
+                  onChange={(v) => onMoneyChange(v)} // Use the custom masking function
+                  prefix="R$"
+                  placeholder="0,00"
+                />
+              )}
+            />
+            
+            {/* Quantidade */}
+            <Controller
+              control={control}
+              name="quantidade"
+              rules={{ required: true }}
+              render={({ field: { value, onChange } }) => (
+                <InputNumber
+                  title="Quantidade"
+                  value={value}
+                  onChange={onChange}
+                  placeholder="100"
+                  // style={styles.inputHalf}
+                />
+              )}
+            />
+          </View>
 
           {/* -------- Total -------- */}
-          <View style={styles.totalRow}>
+          <View style={[styles.totalRow, { backgroundColor: totalBg }]}>
             <Text style={[styles.totalLabel, { color: labelColor }]}>Valor total</Text>
             <Text style={[styles.totalValue, { color: textColor }]}>
               R$ {valorTotal.toFixed(2)}
@@ -88,12 +160,7 @@ export default function ModalLancamento({ visible, onDismiss, onSubmit }: Props)
 
           <View style={styles.buttonRow}>
             <Button onPress={onDismiss}>Cancelar</Button>
-            <Button
-              mode="contained"
-              onPress={() =>
-                onSubmit({ tipo, tipoAtivo, ativo, quantidade, preco, custos, data })
-              }
-            >
+            <Button mode="contained" onPress={handleSubmit(onSubmit)}>
               Adicionar Ativo
             </Button>
           </View>
@@ -101,8 +168,11 @@ export default function ModalLancamento({ visible, onDismiss, onSubmit }: Props)
       </Modal>
     </Portal>
   );
+
+  //#endregion
 }
 
+//#region Styles
 const styles = StyleSheet.create({
   container: {
     alignSelf: 'center',
@@ -134,7 +204,6 @@ const styles = StyleSheet.create({
   },
   totalRow: {
     marginTop: 20,
-    backgroundColor: '#111',
     padding: 12,
     borderRadius: 6,
     flexDirection: 'row',
@@ -152,3 +221,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
 });
+
+//#endregion

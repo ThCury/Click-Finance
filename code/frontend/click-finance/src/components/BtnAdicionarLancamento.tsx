@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import ModalLancamento from './ModalLancamento';
+import {ModalLancamento} from './ModalLancamento';
 import { useTheme } from '../context/ThemeContext';
 
 export default function BtnAdicionarLancamento() {

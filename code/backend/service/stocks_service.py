@@ -9,7 +9,7 @@ from schemas.asset_schema import StockCreate
 from dotenv import load_dotenv
 
 load_dotenv()
-API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
+API_KEY = os.getenv("ALPHAVANTAGE_API_KEY")
 
 
 def get_hello_message():
@@ -31,21 +31,35 @@ def get_stock_quote(symbol: str):
 
     return data["Time Series (Daily)"]
 
-def search_ticker(tickerSearch: str):
-    url = "https://www.alphavantage.co/query"
-    params = {
+
+def search_ticker(keyword: str):
+    base = "https://www.alphavantage.co/query"
+    query = {
         "function": "SYMBOL_SEARCH",
-        "keywords": tickerSearch,
+        "keywords": keyword,
         "apikey": API_KEY
     }
+    if not API_KEY:
+        return {"error": "API key não configurada"}
 
-    response = requests.get(url, params=params)
-    data = response.json()
+    r = requests.get(base, params=query, timeout=10)
+    r.raise_for_status()
+    data = r.json()
 
+    if "Note" in data or "Information" in data:
+        return {"error": data.get("Note") or data.get("Information")}
+    
     if "bestMatches" not in data:
-        return {"error": "Nada encontrado ou limite atingido"}
+        return {"error": "Nenhum resultado"}
 
-    return data["bestMatches"]
+    # -------- filtro por moeda BRL --------
+    brl_only = [
+        item for item in data["bestMatches"]
+        if item.get("8. currency") == "BRL"
+    ]
+
+    return brl_only or []          # retorna lista vazia se não houver BRL
+
 
 def add_stock(db: Session, stock_data: StockCreate, wallet_id: int = 1):
     asset = db.query(Asset).filter_by(symbol=stock_data.symbol).first()
