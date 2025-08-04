@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { View, StyleSheet, KeyboardAvoidingView } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, Alert } from 'react-native';
 import { Modal, Portal, Text, Button, RadioButton, TextInput } from 'react-native-paper';
 
 import { useTheme } from '../context/ThemeContext';
@@ -9,10 +9,12 @@ import InputDatePicker from './InputDatePicker';
 import InputNumber from './InputNumber';
 import InputText from './InputText';
 import AutoFillTicker from './AutoFillTicker';
+import AutocompleteInput from './AutocompleteInput'; // 🌟 novo
 
 import ContainerInput from './ContainerInput';
 import Dropdown from './Dropdown';
 import { moneyApplyMask } from './Utils/Masks/index';
+import  FncBuscaTickers  from './Hooks/FncBuscaTickers';
 
 type Props = {
   visible: boolean;
@@ -55,10 +57,23 @@ export function ModalLancamento({ visible, onDismiss, onSubmit }: Props) {
     const maskedValue = moneyApplyMask(value);
     setValue('preco',maskedValue);
   }
-  function onAtivoChange(value: string) {
-    setValue('ativo',value);
-    console.log('Ativo selecionado:', value);
-    
+
+
+
+  async function onAtivoChange(value: string) {
+    setValue('ativo', value);             // ←  já existia no seu código
+
+    /* dispara busca apenas após 2+ caracteres */
+    if (value.trim().length < 2) return;
+
+    try {
+      const symbols = await FncBuscaTickers(value);
+
+      /* exibe mensagem simples – pode trocar por Toast/Snackbar se quiser */
+    Alert.alert('Resultado', symbols.join(', ') || 'Nenhum ticker');
+    } catch (err: any) {
+      Alert.alert('Erro', err.message ?? 'Falha na busca de tickers');
+    }
   }
 
   //#endregion
@@ -101,16 +116,32 @@ export function ModalLancamento({ visible, onDismiss, onSubmit }: Props) {
             <Controller
               control={control}
               name="ativo"
-              //rules={{ pattern: /^\d{2}\/\d{2}\/\d{4}$/, required: true }}
               render={({ field: { value, onChange } }) => (
                 <InputText
-                  title="Nome do Ativo"
+                  title="Nome do ativo"
                   value={value}
-                  onChange={onChange}
+                  onChange={(v) => {
+                    onAtivoChange(v);   // dispara sua lógica de busca
+                    onChange(v);        // atualiza o RHF
+                  }}
                 />
               )}
             />
           
+          {/* -------- Nome do ativo -------- */}
+          <Controller
+            control={control}
+            name="ativo"
+            render={({ field: { value, onChange } }) => (
+              <AutocompleteInput              // ✔ novo componente
+                value={value}
+                onSelect={(v) => {
+                  onAtivoChange(v);                 // mantém lógica extra
+                  onChange(v);                      // atualiza RHF
+                }}
+              />
+            )}
+          />
 
 
           </View>
