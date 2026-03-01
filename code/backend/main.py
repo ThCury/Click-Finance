@@ -1,27 +1,29 @@
 from fastapi import FastAPI
-from contextlib import asynccontextmanager
+from sqlmodel import SQLModel
+from core.database import engine
+# IMPORTANTE: Importar todos os models para o SQLModel "enxergá-los"
+from models.user import User
+from models.wallet import Wallet
+from models.transaction import Transaction
+from models.asset import Asset
+# Importar suas rotas
+from routes.user_routes import router as user_router
 
-from config.database import init_db
-from api.routes import router as api_router
-from view import router as view_router
-from fastapi.middleware.cors import CORSMiddleware
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    init_db()  # Cria tabelas no início
-    yield      # Aqui poderia ir lógica de shutdown (se necessário)
-
-app = FastAPI(lifespan=lifespan)
-
-# 🚀 CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],            # ou ["http://localhost:19006","exp://..."] p/ produção
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+app = FastAPI(
+    title="Sistema de Investimentos Faculdade",
+    description="API para gestão de carteiras e ativos",
+    version="1.0.0"
 )
 
-# Rotas
-app.include_router(api_router, prefix="/api")
-app.include_router(view_router)
+# Evento que roda quando a API inicia
+@app.on_event("startup")
+def on_startup():
+    # Cria as tabelas no banco de dados se elas não existirem
+    SQLModel.metadata.create_all(engine)
+
+# Registrar as rotas (Endereços da API)
+app.include_router(user_router, prefix="/users", tags=["Usuários"])
+
+@app.get("/")
+def read_root():
+    return {"message": "API de Investimentos está Online!", "status": "ok"}

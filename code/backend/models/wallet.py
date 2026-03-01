@@ -1,11 +1,23 @@
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
-from models.base import Base
+# backend/models/wallet.py
+from typing import TYPE_CHECKING, Optional, List
+from sqlmodel import SQLModel, Field, Relationship
 
-class Wallet(Base):
-    __tablename__ = "wallets"
+if TYPE_CHECKING:
+    from .user import User
+    from .transaction import Transaction
+    
+class Wallet(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(index=True)
+    description: Optional[str] = Field(default=None)
+    
+    # Chave estrangeira para o Usuário
+    user_id: int = Field(foreign_key="user.id", index=True)
+    
+    # Relacionamentos
+    # O back_populates deve bater com o nome do atributo na classe User
+    user: "User" = Relationship(back_populates="wallets")
+    
+    # Uma carteira tem muitas transações
+    transactions: List["Transaction"] = Relationship(back_populates="wallet")
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
-
-    positions = relationship("Position", back_populates="wallet", cascade="all, delete-orphan")

@@ -1,0 +1,40 @@
+services:
+  # --- Serviço de Banco de Dados ---
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    container_name: postgres_container
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+# --- Interface Visual para o Banco (Adminer) ---
+  adminer:
+    image: adminer
+    container_name: adminer_container
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+  # --- Serviço de Backend (API) ---
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    volumes:
+      - ./backend:/app
+      - ./.env:/app/.env
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

@@ -1,38 +1,18 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Float
-from sqlalchemy.ext.declarative import declarative_base
-from models.base import Base  # use o Base compartilhado
+# backend/models/asset.py
+from typing import Optional, List
+from datetime import datetime
+from sqlmodel import SQLModel, Field, Relationship
 
+from models.transaction import Transaction
 
-class Asset(Base):
-    __tablename__ = "assets"
+class Asset(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    ticker: str = Field(index=True, unique=True, description="Ex: PETR4, IVVB11")
+    name: str = Field(description="Nome da empresa ou fundo")
+    type: str = Field(description="Ação, FII, BDR, ETF")
+    
+    current_price: Optional[float] = Field(default=0.0)
+    last_update: datetime = Field(default_factory=datetime.utcnow)
 
-    id = Column(Integer, primary_key=True, index=True)
-    symbol = Column(String(10), unique=True, nullable=False)  # Ex: PETR4
-    name = Column(String(100))                                 # Nome da empresa
-    current_price = Column(Float, nullable=True)               # Preço atual
-    image_url = Column(String(255), nullable=True)
-    description = Column(String(255), nullable=True)
-    type = Column(String(50))  # stock, crypto, etc
-
-    __mapper_args__ = {
-        "polymorphic_identity": "asset",
-        "polymorphic_on": type
-    }
-
-class Stock(Asset):
-    __tablename__ = "stocks"
-
-    id     = Column(Integer, ForeignKey("assets.id"), primary_key=True)
-    # symbol = Column(String(10),
-    #                 ForeignKey("assets.symbol"),
-    #                 nullable=False, index=True)
-
-    pl  = Column(Float)
-    dy  = Column(Float)
-    roe = Column(Float)
-
-    from sqlalchemy import and_
-    __mapper_args__ = {
-        "polymorphic_identity": "stock",
-        "inherit_condition": and_(id == Asset.id)   # deixa claro qual chave usar
-    }
+    # Relacionamento: Um ativo aparece em várias transações
+    transactions: List["Transaction"] = Relationship(back_populates="asset")

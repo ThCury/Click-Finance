@@ -1,19 +1,23 @@
-from sqlalchemy import Column, Integer, Float, String, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
+# backend/models/transaction.py
+from typing import TYPE_CHECKING, Optional
 from datetime import datetime
-from models.base import Base
+from sqlmodel import SQLModel, Field, Relationship
 
-class Transaction(Base):
-    __tablename__ = "transactions"
+if TYPE_CHECKING:
+    from .wallet import Wallet
+    
+class Transaction(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    
+    # Chaves Estrangeiras
+    asset_id: int = Field(foreign_key="asset.id")
+    wallet_id: int = Field(foreign_key="wallet.id") # Adicione esta linha!
+    
+    date: datetime = Field(default_factory=datetime.utcnow)
+    type: str = Field(description="BUY or SELL")
+    quantity: float
+    price: float
+    costs: float = Field(default=0.0)
 
-    id = Column(Integer, primary_key=True)
-    position_id = Column(Integer, ForeignKey("positions.id"), nullable=False)
-
-    transaction_type = Column(String(10), nullable=False)  # "buy" ou "sell"
-    quantity = Column(Float, nullable=False)
-    unit_price = Column(Float, nullable=False)
-    total_price = Column(Float, nullable=False)
-
-    date = Column(DateTime, default=datetime.utcnow)
-
-    position = relationship("Position", back_populates="transactions")
+    # Relacionamento inverso
+    wallet: Optional["Wallet"] = Relationship(back_populates="transactions")
