@@ -5,10 +5,12 @@ from sqlmodel import SQLModel, Field, Relationship
 from models.wallet import Wallet
 
 class User(SQLModel, table=True):
+    __tablename__ = "users"
     id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(index=True, unique=True)
     email: str = Field(unique=True)
     hashed_password: str
-    
+    is_admin: bool = Field(default=False) 
+
     # Relacionamento: Um usuário pode ter várias carteiras
     wallets: List["Wallet"] = Relationship(back_populates="user")

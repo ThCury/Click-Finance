@@ -12,7 +12,7 @@ class Wallet(SQLModel, table=True):
     description: Optional[str] = Field(default=None)
     
     # Chave estrangeira para o Usuário
-    user_id: int = Field(foreign_key="user.id", index=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
     
     # Relacionamentos
     # O back_populates deve bater com o nome do atributo na classe User

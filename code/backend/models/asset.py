@@ -1,9 +1,10 @@
-# backend/models/asset.py
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime
 from sqlmodel import SQLModel, Field, Relationship
 
-from models.transaction import Transaction
+# Evita importação circular em tempo de execução
+if TYPE_CHECKING:
+    from .transaction import Transaction
 
 class Asset(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
