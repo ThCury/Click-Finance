@@ -1,0 +1,10 @@
+mobile: 
+	kotlin
+	react_native
+	
+	
+
+web:
+	vue
+	react
+	angular
