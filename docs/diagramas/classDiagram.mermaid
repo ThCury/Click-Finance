@@ -30,6 +30,26 @@ class WalletSnapshot {
   +float profitability
 }
 
+class WalletGoal {
+  +int id
+  +int wallet_id
+  +string title
+  +float monthly_investment_target
+  +float desired_monthly_income
+  +float desired_passive_income
+  +float target_equity
+  +datetime start_date
+  +datetime? end_date
+  +string? notes
+}
+
+class AllocationGoal {
+  +int id
+  +int wallet_goal_id
+  +string asset_type
+  +float target_percentage
+}
+
 class Asset {
   +int id
   +string ticker
@@ -145,6 +165,9 @@ User "1" --> "0..*" Follow
 
 Wallet "1" --> "0..*" Transaction
 Wallet "1" --> "0..*" WalletSnapshot
+Wallet "1" --> "0..*" WalletGoal
+
+WalletGoal "1" --> "0..*" AllocationGoal
 
 Transaction --> Wallet
 Transaction --> Asset
@@ -177,3 +200,5 @@ PostWallet --> Wallet
 
 AssetInformation --> Asset
 WalletSnapshot --> Wallet
+WalletGoal --> Wallet
+AllocationGoal --> WalletGoal
