@@ -1,5 +1,5 @@
 classDiagram
-direction LR
+direction TB
 
 class User {
   +int id
@@ -135,48 +135,45 @@ Post <|-- InformationPost
 InformationPost <|-- AssetInformation
 InformationPost <|-- GeneralInformation
 
-User "1" --> "0..*" Wallet : owns
-User "1" --> "0..*" Post : publishes
-User "1" --> "0..*" Comment : writes
-User "1" --> "0..*" Like : likes
-User "1" --> "0..*" SavedPost : saves
-User "1" --> "0..*" VerificationRequest : requests
-User "1" --> "0..*" Follow : follower
-User "1" --> "0..*" Follow : followed
+User "1" --> "0..*" Wallet
+User "1" --> "0..*" Post
+User "1" --> "0..*" Comment
+User "1" --> "0..*" Like
+User "1" --> "0..*" SavedPost
+User "1" --> "0..*" VerificationRequest
+User "1" --> "0..*" Follow
 
-Wallet "1" --> "0..*" Transaction : contains
-Wallet "1" --> "0..*" WalletSnapshot : history
-Wallet --> User : owner
+Wallet "1" --> "0..*" Transaction
+Wallet "1" --> "0..*" WalletSnapshot
 
-Transaction --> Wallet : wallet
-Transaction --> Asset : asset
-Asset "1" --> "0..*" Transaction : referenced_in
+Transaction --> Wallet
+Transaction --> Asset
+Asset "1" --> "0..*" Transaction
 
-Post "1" --> "0..*" Comment : has
-Post "1" --> "0..*" Like : receives
-Post "1" --> "0..*" SavedPost : saved_by
-Post "1" --> "0..*" PostAsset : mentions
-Post "1" --> "0..*" PostWallet : mentions
+Post "1" --> "0..*" Comment
+Post "1" --> "0..*" Like
+Post "1" --> "0..*" SavedPost
+Post "1" --> "0..*" PostAsset
+Post "1" --> "0..*" PostWallet
 
-Comment --> User : user
-Comment --> Post : post
+Comment --> User
+Comment --> Post
 
-Like --> User : user
-Like --> Post : post
+Like --> User
+Like --> Post
 
-SavedPost --> User : user
-SavedPost --> Post : post
+SavedPost --> User
+SavedPost --> Post
 
-Follow --> User : follower
-Follow --> User : followed
+Follow --> User
 
-VerificationRequest --> User : user
+VerificationRequest --> User
 
-PostAsset --> Post : post
-PostAsset --> Asset : asset
+PostAsset --> Post
+PostAsset --> Asset
 
-PostWallet --> Post : post
-PostWallet --> Wallet : wallet
+PostWallet --> Post
+PostWallet --> Wallet
 
-AssetInformation --> Asset : related_asset
-WalletSnapshot --> Wallet : wallet
+AssetInformation --> Asset
+WalletSnapshot --> Wallet
