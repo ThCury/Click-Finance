@@ -1,58 +1,169 @@
 classDiagram
 direction LR
 
-class Asset {
-+int id
-+string ticker
-+string name
-+string type
-+float current_price
-+datetime last_update
-}
-
-class Transaction {
-+int id
-+int asset_id
-+int wallet_id
-+datetime date
-+string type
-+float quantity
-+float price
-+float costs
-}
-
 class User {
-+int id
-+string username
-+string email
-+string hashed_password
-+bool is_admin
+  +int id
+  +string username
+  +string email
+  +string hashed_password
+  +bool is_admin
+  +bool is_verified
+  +string? bio
+  +datetime created_at
 }
 
 class Wallet {
-+int id
-+string name
-+string? description
-+int user_id
+  +int id
+  +string name
+  +string? description
+  +int user_id
+  +bool is_public
+  +datetime created_at
 }
 
-class Annotations {
-+int id
-+bool public
-+string title
-+string annotation
-+string annotation_type
-+int target_id
+class Asset {
+  +int id
+  +string ticker
+  +string name
+  +string type
+  +float current_price
+  +datetime last_update
 }
 
-User "1" --> "0..*" Wallet : wallets
-Wallet "1" --> "0..*" Transaction : transactions
-Asset "1" --> "0..*" Transaction : transactions
+class Transaction {
+  +int id
+  +int asset_id
+  +int wallet_id
+  +datetime date
+  +string type
+  +float quantity
+  +float price
+  +float costs
+}
+
+class Post {
+  +int id
+  +int user_id
+  +string title
+  +string content
+  +string post_type
+  +bool is_public
+  +datetime created_at
+  +datetime updated_at
+}
+
+class PostAsset {
+  +int id
+  +int post_id
+  +int asset_id
+}
+
+class PostWallet {
+  +int id
+  +int post_id
+  +int wallet_id
+}
+
+class Like {
+  +int id
+  +int user_id
+  +int post_id
+  +datetime created_at
+}
+
+class SavedPost {
+  +int id
+  +int user_id
+  +int post_id
+  +datetime created_at
+}
+
+class Follow {
+  +int id
+  +int follower_id
+  +int followed_id
+  +datetime created_at
+}
+
+class Comment {
+  +int id
+  +int user_id
+  +int post_id
+  +string content
+  +datetime created_at
+  +datetime updated_at
+}
+
+class VerificationRequest {
+  +int id
+  +int user_id
+  +string document_type
+  +string document_number
+  +string status
+  +datetime requested_at
+  +datetime reviewed_at
+}
+
+class Information {
+  +int id
+  +string title
+  +string content
+  +string info_type
+  +bool is_public
+  +datetime created_at
+}
+
+class AssetInformation {
+  +int id
+  +int asset_id
+  +int information_id
+}
+
+User "1" --> "0..*" Wallet : owns
+User "1" --> "0..*" Post : publishes
+User "1" --> "0..*" Comment : writes
+User "1" --> "0..*" Like : likes
+User "1" --> "0..*" SavedPost : saves
+User "1" --> "0..*" VerificationRequest : requests
+User "1" --> "0..*" Follow : follower
+User "1" --> "0..*" Follow : followed
+
+Wallet "1" --> "0..*" Transaction : contains
+Wallet --> User : owner
+
+Asset "1" --> "0..*" Transaction : referenced_in
+Asset "1" --> "0..*" PostAsset : related_posts
+Asset "1" --> "0..*" AssetInformation : related_infos
 
 Transaction --> Wallet : wallet
 Transaction --> Asset : asset
-Wallet --> User : user
 
-Annotations --> Transaction : annotation_of
-Annotations --> Wallet : annotation_of
-Annotations --> Asset : annotation_of
+Post "1" --> "0..*" Like : receives
+Post "1" --> "0..*" SavedPost : saved_by
+Post "1" --> "0..*" Comment : has
+Post "1" --> "0..*" PostAsset : mentions
+Post "1" --> "0..*" PostWallet : mentions
+
+PostAsset --> Post : post
+PostAsset --> Asset : asset
+
+PostWallet --> Post : post
+PostWallet --> Wallet : wallet
+
+Like --> User : user
+Like --> Post : post
+
+SavedPost --> User : user
+SavedPost --> Post : post
+
+Comment --> User : user
+Comment --> Post : post
+
+Follow --> User : follower
+Follow --> User : followed
+
+VerificationRequest --> User : user
+
+Information "1" --> "0..*" AssetInformation : asset_links
+AssetInformation --> Information : information
+AssetInformation --> Asset : asset
