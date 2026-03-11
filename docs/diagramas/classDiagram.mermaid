@@ -16,9 +16,18 @@ class Wallet {
   +int id
   +string name
   +string? description
-  +int user_id
   +bool is_public
+  +int user_id
   +datetime created_at
+}
+
+class WalletSnapshot {
+  +int id
+  +int wallet_id
+  +datetime snapshot_date
+  +float total_value
+  +float total_cost
+  +float profitability
 }
 
 class Asset {
@@ -42,26 +51,40 @@ class Transaction {
 }
 
 class Post {
+  <<abstract>>
   +int id
   +int user_id
   +string title
   +string content
-  +string post_type
   +bool is_public
   +datetime created_at
   +datetime updated_at
 }
 
-class PostAsset {
-  +int id
-  +int post_id
+class SocialPost {
+  +string category
+}
+
+class InformationPost {
+  +string info_type
+  +string source
+}
+
+class AssetInformation {
   +int asset_id
 }
 
-class PostWallet {
+class GeneralInformation {
+  +string theme
+}
+
+class Comment {
   +int id
+  +int user_id
   +int post_id
-  +int wallet_id
+  +string content
+  +datetime created_at
+  +datetime updated_at
 }
 
 class Like {
@@ -85,15 +108,6 @@ class Follow {
   +datetime created_at
 }
 
-class Comment {
-  +int id
-  +int user_id
-  +int post_id
-  +string content
-  +datetime created_at
-  +datetime updated_at
-}
-
 class VerificationRequest {
   +int id
   +int user_id
@@ -104,20 +118,22 @@ class VerificationRequest {
   +datetime reviewed_at
 }
 
-class Information {
+class PostAsset {
   +int id
-  +string title
-  +string content
-  +string info_type
-  +bool is_public
-  +datetime created_at
+  +int post_id
+  +int asset_id
 }
 
-class AssetInformation {
+class PostWallet {
   +int id
-  +int asset_id
-  +int information_id
+  +int post_id
+  +int wallet_id
 }
+
+Post <|-- SocialPost
+Post <|-- InformationPost
+InformationPost <|-- AssetInformation
+InformationPost <|-- GeneralInformation
 
 User "1" --> "0..*" Wallet : owns
 User "1" --> "0..*" Post : publishes
@@ -129,26 +145,21 @@ User "1" --> "0..*" Follow : follower
 User "1" --> "0..*" Follow : followed
 
 Wallet "1" --> "0..*" Transaction : contains
+Wallet "1" --> "0..*" WalletSnapshot : history
 Wallet --> User : owner
-
-Asset "1" --> "0..*" Transaction : referenced_in
-Asset "1" --> "0..*" PostAsset : related_posts
-Asset "1" --> "0..*" AssetInformation : related_infos
 
 Transaction --> Wallet : wallet
 Transaction --> Asset : asset
+Asset "1" --> "0..*" Transaction : referenced_in
 
+Post "1" --> "0..*" Comment : has
 Post "1" --> "0..*" Like : receives
 Post "1" --> "0..*" SavedPost : saved_by
-Post "1" --> "0..*" Comment : has
 Post "1" --> "0..*" PostAsset : mentions
 Post "1" --> "0..*" PostWallet : mentions
 
-PostAsset --> Post : post
-PostAsset --> Asset : asset
-
-PostWallet --> Post : post
-PostWallet --> Wallet : wallet
+Comment --> User : user
+Comment --> Post : post
 
 Like --> User : user
 Like --> Post : post
@@ -156,14 +167,16 @@ Like --> Post : post
 SavedPost --> User : user
 SavedPost --> Post : post
 
-Comment --> User : user
-Comment --> Post : post
-
 Follow --> User : follower
 Follow --> User : followed
 
 VerificationRequest --> User : user
 
-Information "1" --> "0..*" AssetInformation : asset_links
-AssetInformation --> Information : information
-AssetInformation --> Asset : asset
+PostAsset --> Post : post
+PostAsset --> Asset : asset
+
+PostWallet --> Post : post
+PostWallet --> Wallet : wallet
+
+AssetInformation --> Asset : related_asset
+WalletSnapshot --> Wallet : wallet
